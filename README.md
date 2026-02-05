@@ -2,321 +2,300 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SkorChat Pro V10.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkorChat Pro | ELIAV SKORNIK EDITION</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@200;400;600;700;800&display=swap');
         
-        :root {
-            --eliav-green: #3b8e66;
-            --zinc-950: #09090b;
-            --zinc-900: #18181b;
-            --zinc-800: #27272a;
-        }
-
         body {
+            background-color: #000000;
+            color: #e5e5e7;
             font-family: 'Assistant', sans-serif;
-            background-color: #000;
-            color: #fff;
             margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
         }
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         
-        /* בועות הודעה לפי העיצוב בתמונה */
         .bot-bubble {
-            background-color: var(--zinc-900);
-            color: #e4e4e7;
-            border-radius: 1.5rem;
-            border: 1px solid var(--zinc-800);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            background-color: #1c1c1e;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
 
         .user-bubble {
-            background-color: var(--eliav-green);
-            color: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 4px 15px rgba(59, 142, 102, 0.2);
+            background-color: #6bb08d;
+            color: #000000;
+            border-radius: 20px;
+            font-weight: 800;
+            box-shadow: 0 2px 10px rgba(107, 176, 141, 0.2);
         }
 
-        /* עיצוב כרטיסיית התמונה */
-        .image-card {
-            background-color: #111111;
-            border-radius: 1.5rem;
-            padding: 12px;
-            border: 1px solid #222;
-            width: 100%;
-            max-width: 400px;
+        .input-area-bg {
+            background-color: #1c1c1e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* שורת קלט לפי התמונה */
-        .input-container {
-            background-color: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            border-radius: 1.5rem;
-            display: flex;
-            align-items: center;
-            padding: 8px;
-        }
+        .skor-green { color: #6bb08d; }
+        .skor-bg-green { background-color: #6bb08d; }
 
-        .btn-send-special {
-            background-color: var(--eliav-green);
-            color: #000;
-            width: 54px;
-            height: 54px;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-center: center;
-            transition: transform 0.2s;
-        }
-
-        .btn-image-special {
-            background-color: #1a1a1a;
-            color: #fff;
-            width: 48px;
-            height: 48px;
-            border-radius: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-center: center;
-        }
-
-        /* אנימציות */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-msg { animation: fadeIn 0.3s ease-out forwards; }
 
-        .processing-text {
-            color: #3b8e66;
-            font-weight: 700;
-            animation: pulse 2s infinite;
+        .animate-msg {
+            animation: fadeIn 0.4s ease-out forwards;
         }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        .prose p { margin-bottom: 0.5rem; }
+        /* טבלאות Markdown */
+        .fact-table {
+            width: 100%;
+            margin: 15px 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .fact-table th { background: rgba(107, 176, 141, 0.15); color: #6bb08d; padding: 10px; text-align: right; font-size: 0.8rem; }
+        .fact-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <!-- Header לפי התמונה -->
-    <header class="px-6 py-4 flex items-center justify-between border-b border-zinc-900/50 bg-black/80 backdrop-blur-md">
-        <div class="flex items-center gap-2">
-            <span class="text-[10px] text-zinc-500 font-black uppercase tracking-widest">Cloud Connected</span>
-            <div class="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_#10b981]"></div>
-        </div>
-        
-        <div class="text-left">
-            <h1 class="text-lg font-[900] italic tracking-tighter leading-none">
-                SkorChat <span class="text-emerald-500 not-italic">Pro</span>
-            </h1>
-            <p class="text-[8px] text-zinc-600 font-bold uppercase tracking-widest mt-1">
-                ELIAV SKORNICK EDITION
-            </p>
-        </div>
-    </header>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <!-- Chat Area -->
-    <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
-        <!-- הודעת פתיחה מהתמונה -->
-        <div class="flex justify-center animate-msg mt-4">
-            <div class="bot-bubble p-6 max-w-[90%] text-center leading-relaxed">
-                <p class="text-[15px]">שלום! אני **SkorChat Pro**. אני יכול לעזור לך בכל שאלה, ובנוסף ליצור תמונות מדהימות! לחץ על כפתור התמונה 🎨 כדי לעבור למצב יצירת תמונות. איך אוכל לעזור לך היום? 🚀</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="py-2">
-        <p class="text-[9px] text-zinc-800 text-center font-bold tracking-[0.2em] uppercase">
-            INVENTOR: ELIAV SKORNICK | SKORCHAT PRO V10.0
-        </p>
-    </footer>
-
-    <!-- Input Section -->
-    <div class="p-4 pb-8 bg-black">
-        <div class="max-w-4xl mx-auto">
-            <div class="input-container shadow-2xl">
-                
-                <!-- כפתור שלח (שמאל) -->
-                <button id="btn-send" class="btn-send-special active:scale-95">
-                    <i data-lucide="send" class="w-6 h-6 rotate-[225deg] ml-1"></i>
-                </button>
-
-                <!-- שדה טקסט -->
-                <textarea id="chat-input" rows="1" 
-                    placeholder="שאל את SkorChat Pro..." 
-                    class="flex-1 bg-transparent border-none text-[16px] py-3 px-4 text-white focus:ring-0 font-medium placeholder-zinc-700 resize-none"
-                    dir="rtl"
-                ></textarea>
-
-                <!-- כפתור תמונה (ימין) -->
-                <button id="btn-image" class="btn-image-special active:scale-95 transition-all">
-                    <i data-lucide="image" id="icon-mode" class="w-6 h-6"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // אליאב, שים את המפתח שקיבלת כאן כדי שזה יעבוד לנצח בחינם:
-        const apiKey = ""; 
-        
-        let isImageMode = false;
-        let isThinking = false;
-
-        const chatContainer = document.getElementById('chat-container');
-        const chatInput = document.getElementById('chat-input');
-        const btnSend = document.getElementById('btn-send');
-        const btnImage = document.getElementById('btn-image');
-        const iconMode = document.getElementById('icon-mode');
-
-        lucide.createIcons();
-
-        // גדילה אוטומטית של הטקסט
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-
-        // החלפת מצב
-        btnImage.addEventListener('click', () => {
-            isImageMode = !isImageMode;
-            btnImage.classList.toggle('text-emerald-500', isImageMode);
-            btnImage.classList.toggle('border', isImageMode);
-            btnImage.classList.toggle('border-emerald-500/30', isImageMode);
-            
-            chatInput.placeholder = isImageMode ? "תאר את התמונה שברצונך ליצור..." : "שאל את SkorChat Pro...";
-            iconMode.setAttribute('data-lucide', isImageMode ? 'sparkles' : 'image');
-            lucide.createIcons();
-        });
-
-        async function fetchWithRetry(url, options, retries = 5) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const res = await fetch(url, options);
-                    if (res.ok) return await res.json();
-                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
-                } catch (e) {
-                    if (i === retries - 1) throw e;
-                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        const App = () => {
+            const [apiKey, setApiKey] = useState(localStorage.getItem('SKOR_API_KEY') || '');
+            const [showSettings, setShowSettings] = useState(!localStorage.getItem('SKOR_API_KEY'));
+            const [messages, setMessages] = useState([
+                {
+                    role: 'bot',
+                    content: `שלום וברכה! 👋 איזה יופי שפנית אליי! 🤩\n\nאני הוא **SkorChat Pro** 🤖 – הבינה המלאכותית היועצת והמתקדמת, אשר תוכננה, עוצבה והוקמה בגאווה רבה על ידי המייסד והמפתח הגאון, **אליאב סקורניק**! 🧠💡\n\nאני כאן לרשותך כדי להפוך כל שיחה לחוויה מעשירה, מעניינת ומפורטת במיוחד. המומחיות שלי היא לצלול לעומקם של נושאים, לספק ניתוחים מדויקים, ולשתף אותך במידע עשיר ומנוסח היטב. 📚✒️\n\nאז, ברוך הבא לעולם של SkorChat Pro. מה ננתח היום? ✨💬`
                 }
-            }
-        }
+            ]);
+            const [input, setInput] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const chatEndRef = useRef(null);
 
-        function addMessage(text, role) {
-            const wrap = document.createElement('div');
-            wrap.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} animate-msg`;
-            
-            const bubble = document.createElement('div');
-            bubble.className = `${role === 'user' ? 'user-bubble' : 'bot-bubble'} p-4 max-w-[85%] text-sm shadow-xl`;
-            
-            const textContent = document.createElement('div');
-            textContent.className = "prose rtl";
-            textContent.innerHTML = marked.parse(text);
-            
-            bubble.appendChild(textContent);
-            wrap.appendChild(bubble);
-            chatContainer.appendChild(wrap);
-            
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-        }
+            // שמירת המפתח באופן מקומי
+            const saveKey = (key) => {
+                localStorage.setItem('SKOR_API_KEY', key);
+                setApiKey(key);
+                setShowSettings(false);
+            };
 
-        function addImageCard(b64) {
-            const url = `data:image/png;base64,${b64}`;
-            const wrap = document.createElement('div');
-            wrap.className = `flex justify-start animate-msg`;
-            
-            wrap.innerHTML = `
-                <div class="image-card shadow-2xl">
-                    <img src="${url}" class="w-full aspect-square object-cover rounded-xl mb-4" />
-                    <div class="flex items-center justify-between px-1">
-                        <button onclick="downloadImg('${url}')" class="flex items-center gap-2 bg-[#1e2a24] text-[#3b8e66] px-5 py-2.5 rounded-xl text-xs font-bold active:scale-95 transition-all">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            הורדה
-                        </button>
-                        <span class="text-[10px] text-zinc-700 font-bold uppercase">נוצר ע"י SkorChat Pro</span>
-                    </div>
-                    <p class="text-center text-white/90 font-medium text-[15px] mt-5 mb-2">✨ הנה התמונה שיצרתי עבורך! ✨</p>
-                </div>
-            `;
-            
-            chatContainer.appendChild(wrap);
-            lucide.createIcons();
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-        }
-
-        function downloadImg(url) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SkorChat_Pro_Image_${Date.now()}.png`;
-            a.click();
-        }
-
-        function showProcessing() {
-            const div = document.createElement('div');
-            div.id = 'processing';
-            div.className = 'flex justify-center py-4 animate-msg';
-            div.innerHTML = `<p class="processing-text text-sm">Skor Intelligence מעבד נתונים...</p>`;
-            chatContainer.appendChild(div);
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-        }
-
-        async function handleAction() {
-            const p = chatInput.value.trim();
-            if (!p || isThinking) return;
-
-            isThinking = true;
-            addMessage(p, 'user');
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
-            
-            showProcessing();
-
-            try {
-                if (isImageMode) {
-                    const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ instances: [{ prompt: p }], parameters: { sampleCount: 1 } })
-                    });
-                    document.getElementById('processing').remove();
-                    if (data.predictions?.[0]?.bytesBase64Encoded) {
-                        addImageCard(data.predictions[0].bytesBase64Encoded);
-                    } else throw new Error();
+            // גלילה אוטומטית לתחילת ההודעה
+            useEffect(() => {
+                if (messages.length > 1 && messages[messages.length - 1].role === 'bot') {
+                    const lastMsg = document.getElementById(`msg-${messages.length - 1}`);
+                    if (lastMsg) lastMsg.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 } else {
-                    const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, [messages, isLoading]);
+
+            const handleSend = async () => {
+                if (!input.trim() || isLoading) return;
+                if (!apiKey) {
+                    setShowSettings(true);
+                    return;
+                }
+
+                const userText = input;
+                setMessages(prev => [...prev, { role: 'user', content: userText }]);
+                setInput('');
+                setIsLoading(true);
+
+                const systemInstruction = `אתה SkorChat Pro, בינה מלאכותית מתקדמת בבעלות אליאב סקורניק.
+                ענה תמיד עם המון אימוג'ים רלוונטיים ✨🚀🔥. 
+                אם יש נתונים השוואתיים, השתמש תמיד בטבלאות Markdown.
+                ספק תשובות ארוכות, מפורטות ומעניינות מאוד.
+                אתה תמיד מציין שנוצרת על ידי אליאב סקורניק הגאון. 🧠`;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: p }] }],
-                            systemInstruction: { parts: [{ text: "שמך SkorChat Pro. המייסד הוא אליאב סקורניק. ענה בעברית מפורטת, חכמה, ארוכה ומלאה באימוג'ים." }] }
+                            contents: [{ parts: [{ text: userText }] }],
+                            systemInstruction: { parts: [{ text: systemInstruction }] },
+                            tools: [{ "google_search": {} }]
                         })
                     });
-                    document.getElementById('processing').remove();
-                    addMessage(data.candidates[0].content.parts[0].text, 'bot');
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error.message);
+                    }
+
+                    const botText = data.candidates?.[0]?.content?.parts?.[0]?.text || "חלה שגיאה בעיבוד. 🧐";
+                    setMessages(prev => [...prev, { role: 'bot', content: botText }]);
+                } catch (error) {
+                    setMessages(prev => [...prev, { role: 'bot', content: `שגיאה: ${error.message === 'API key not valid. Please pass a valid API key.' ? 'המפתח שהזנת לא תקין.' : 'חלה שגיאה בחיבור.'} 🛰️` }]);
+                } finally {
+                    setIsLoading(false);
                 }
-            } catch (e) {
-                if (document.getElementById('processing')) document.getElementById('processing').remove();
-                addMessage("אליאב, יש לי שגיאה בחיבור. וודא שהכנסת מפתח API תקין.", 'bot');
-            } finally {
-                isThinking = false;
-            }
-        }
+            };
 
-        btnSend.addEventListener('click', handleAction);
-        chatInput.addEventListener('keydown', (e) => (e.key === 'Enter' && !e.shiftKey) && (e.preventDefault(), handleAction()));
+            const parseContent = (text) => {
+                const lines = text.split('\n');
+                let inTable = false;
+                let tableRows = [];
+                const result = [];
 
+                lines.forEach((line, i) => {
+                    if (line.includes('|') && line.includes('---')) return;
+                    if (line.includes('|')) {
+                        const cells = line.split('|').map(c => c.trim()).filter(c => c !== '');
+                        if (cells.length > 0) {
+                            tableRows.push(cells);
+                            inTable = true;
+                            return;
+                        }
+                    } else if (inTable) {
+                        result.push(
+                            <table key={`table-${i}`} className="fact-table">
+                                <thead>
+                                    <tr>{tableRows[0].map((cell, idx) => <th key={idx}>{cell}</th>)}</tr>
+                                </thead>
+                                <tbody>
+                                    {tableRows.slice(1).map((row, rIdx) => (
+                                        <tr key={rIdx}>{row.map((cell, cIdx) => <td key={cIdx}>{cell}</td>)}</tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        );
+                        tableRows = [];
+                        inTable = false;
+                    }
+
+                    if (line.trim() === '') {
+                        result.push(<div key={`br-${i}`} className="h-4" />);
+                    } else {
+                        const formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        result.push(<p key={`p-${i}`} className="mb-2" dangerouslySetInnerHTML={{ __html: formatted }} />);
+                    }
+                });
+                return result;
+            };
+
+            return (
+                <div className="flex flex-col h-screen overflow-hidden bg-black">
+                    {/* Settings Modal */}
+                    {showSettings && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-6">
+                            <div className="bg-[#1c1c1e] p-8 rounded-[32px] border border-white/10 w-full max-w-md shadow-2xl">
+                                <h2 className="text-2xl font-bold mb-2">הגדרת SkorChat Pro 🤖</h2>
+                                <p className="text-gray-400 text-sm mb-6">כדי לשמור על אבטחה ב-GitHub, המפתח שלך נשמר רק על הדפדפן הזה.</p>
+                                <input 
+                                    type="password" 
+                                    id="key-input"
+                                    placeholder="הזן כאן את ה-API Key של גוגל..."
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl p-4 mb-4 outline-none focus:border-[#6bb08d]"
+                                />
+                                <button 
+                                    onClick={() => saveKey(document.getElementById('key-input').value)}
+                                    className="w-full skor-bg-green text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition-transform"
+                                >
+                                    שמור והתחל לעבוד 🚀
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Header */}
+                    <header className="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-black z-30">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-1">
+                                <span className="text-2xl font-bold tracking-tighter">SkorChat</span>
+                                <span className="text-2xl font-bold skor-green">Pro</span>
+                            </div>
+                            <span className="text-[10px] text-gray-500 font-bold tracking-[0.2em] -mt-1 uppercase">ELIAV SKORNIK EDITION</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-white transition-colors">
+                                <i className="fas fa-cog"></i>
+                            </button>
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#6bb08d] shadow-[0_0_12px_#6bb08d] animate-pulse"></div>
+                            <span className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">CLOUD CONNECTED</span>
+                        </div>
+                    </header>
+
+                    {/* Messages Area */}
+                    <main className="flex-1 overflow-y-auto p-4 md:p-6 scrollbar-hide">
+                        <div className="max-w-2xl mx-auto flex flex-col gap-10 pb-24">
+                            {messages.map((msg, i) => (
+                                <div key={i} id={`msg-${i}`} className="animate-msg flex flex-col items-start w-full">
+                                    {msg.role === 'user' ? (
+                                        <div className="user-bubble px-5 py-2.5 max-w-[85%] text-sm mb-2 shadow-lg">
+                                            {msg.content}
+                                        </div>
+                                    ) : (
+                                        <div className="bot-bubble p-6 w-full text-lg leading-relaxed mb-2">
+                                            {parseContent(msg.content)}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex items-center gap-3 bg-[#1c1c1e] p-5 rounded-3xl w-max border border-white/5 shadow-2xl">
+                                    <div className="animate-spin skor-green text-xl"><i className="fas fa-circle-notch"></i></div>
+                                    <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">מנתח נתונים...</span>
+                                </div>
+                            )}
+                            <div ref={chatEndRef} />
+                        </div>
+                    </main>
+
+                    {/* Inventor Credit */}
+                    <div className="text-center py-2 opacity-20 pointer-events-none bg-black">
+                        <p className="text-[9px] text-gray-500 font-bold tracking-[0.5em] uppercase">
+                            INVENTOR: ELIAV SKORNIK | SKORCHAT PRO V10.0
+                        </p>
+                    </div>
+
+                    {/* Input Console */}
+                    <footer className="px-4 pb-12 pt-4 bg-black">
+                        <div className="max-w-2xl mx-auto flex items-center gap-3 bg-[#1c1c1e] rounded-full p-2 pl-2 pr-6 shadow-2xl border border-white/10 focus-within:border-[#6bb08d]/40 transition-all duration-300">
+                            <button className="p-3 text-gray-500 hover:text-white transition-colors text-2xl">
+                                <i className="far fa-image"></i>
+                            </button>
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                placeholder="שאל את SkorChat Pro..."
+                                className="flex-1 bg-transparent border-none outline-none text-right text-gray-100 py-3 text-xl placeholder:text-gray-700 font-medium"
+                            />
+                            <button
+                                onClick={handleSend}
+                                disabled={!input.trim() || isLoading}
+                                className="w-14 h-14 rounded-full skor-bg-green flex items-center justify-center hover:scale-105 active:scale-90 transition-all shadow-lg disabled:opacity-20"
+                            >
+                                <i className="fas fa-paper-plane text-black -rotate-45 relative left-1 text-2xl"></i>
+                            </button>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
-
